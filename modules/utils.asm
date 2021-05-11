@@ -1,8 +1,8 @@
   MODULE Utils
 ; requires module Scr
 
-; Infix operation returning a 16-bit value with
-  ; the left operand as high byte and the right one as low byte.
+  ; Infix operation returning a 16-bit value with
+  ; the left operand as high byte and the right one as low byte
   DEFINE _hl_ << 8 |
 
 ; Sets attrs of all charcells of the screen

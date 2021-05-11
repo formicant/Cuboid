@@ -11,10 +11,10 @@ end        EQU $5B00  ; Screen memory end address
 
 ; Screen dimensions
 
-width    EQU 256  ; Screen width in pixels
-height   EQU 192  ; Screen height in pixels
-ccWidth  EQU  32  ; Screen width in charcells
-ccHeight EQU  24  ; Screen height in charcells
+width    EQU 256    ; Screen width in pixels
+height   EQU 192    ; Screen height in pixels
+ccWidth  EQU  32    ; Screen width in charcells
+ccHeight EQU  24    ; Screen height in charcells
 
 ; Colors
 
