@@ -1,0 +1,4 @@
+*.sld
+*.sna
+.mypy_cache
+.tmp

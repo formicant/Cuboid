@@ -1,0 +1,63 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "Internal Simulator",
+            "remoteType": "zsim",
+            "zsim": {
+                "visualMemory": "ZXNEXT",
+                "memoryModel": "ZXNEXT",
+                "ulaScreen": true,
+                "zxBorderWidth": 20,
+                "vsyncInterrupt": true,
+                "zxKeyboard": true,
+                "zxBeeper": true
+            },
+            "sjasmplus": [
+                {
+                    "path": "cuboid.sld"
+                }
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10,
+                "codeCoverageEnabled": true
+            },
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+                "-logpoint enable",
+                "-assertion enable",
+                "-wpmem enable"
+            ],
+            "disassemblerArgs": {
+                "esxdosRst": true
+            },
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "stackTop",
+            "load": "cuboid.sna",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+        
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "Unit Tests",
+            "unitTests": true,
+            "remoteType": "zsim",
+            "disassemblerArgs": {
+                "esxdosRst": true
+            },
+            "sjasmplus": [
+                {
+                    "path": "cuboid.sld",
+                }
+            ],
+            "rootFolder": "${workspaceFolder}",
+            "load": "cuboid.sna",
+        },
+
+    ]
+}
