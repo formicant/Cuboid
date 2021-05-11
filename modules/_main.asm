@@ -7,8 +7,9 @@
 
 stackTop
 main
-    call Utils.drawBrightGrid
-    call Utils.drawEveryOtherPixel
+    ld a, Scr.papBlk | Scr.inkWht
+    call Utils.setScreenAttr
+    call Utils.drawBackground
     ei
     
 .loop

@@ -1,4 +1,4 @@
-  MODULE Scr  ; Constants related to the screen
+  MODULE Scr        ; Constants related to the screen
 
 ; Screen memory
 
