@@ -1,4 +1,4 @@
-  MODULE Sprite  ; 
+  MODULE Sprite     ; 
 
 ; Draws a sprite on the screen
 ; < hl: sprite addr
@@ -25,8 +25,7 @@ draw
     ld ixl, a
     ld ixh, high(Tile.tileRowAddrTable)
     
-.drawRow
-      ; ix: current row addr in tileRowAddrTable
+.drawRow            ; ix: current row addr in tileRowAddrTable
     ld a, (ix)
     inc ix
     ld d, (ix)
@@ -45,7 +44,7 @@ draw
     ld (de), a      ; put to the screen
     inc d
   EDUP
-    .4 dec d        ; return to the tile top
+  .4 dec d          ; return to the tile top
     inc e           ; move right
     djnz .drawTile
     

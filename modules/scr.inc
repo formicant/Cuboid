@@ -2,12 +2,12 @@
 
 ; Screen memory
 
-start      EQU $4000  ; Screen memory start address
-pixLength  EQU $1800  ; Byte length of pixel data
-attrStart  EQU $5800  ; Attribute data start address
-attrLength EQU  $300  ; Byte length of attribute data
-length     EQU $1B00  ; Byte length of screen memory
-end        EQU $5B00  ; Screen memory end address
+start      EQU #4000  ; Screen memory start address
+pixLength  EQU #1800  ; Byte length of pixel data
+attrStart  EQU #5800  ; Attribute data start address
+attrLength EQU  #300  ; Byte length of attribute data
+length     EQU #1B00  ; Byte length of screen memory
+end        EQU #5B00  ; Screen memory end address
 
 ; Screen dimensions
 
@@ -38,7 +38,7 @@ papWht EQU inkWht << 3
 
 inkMask EQU inkWht
 papMask EQU papWht
-bright  EQU $40
-flash   EQU $80
+bright  EQU #40
+flash   EQU #80
 
   ENDMODULE

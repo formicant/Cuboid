@@ -3,7 +3,7 @@
   
   INCLUDE "scr.inc"
   
-  ORG $8000
+  ORG #8000
 
 stackTop
 main
@@ -17,7 +17,7 @@ main
     out (254), a
     push iy
     
-    ld de, $100C
+    ld de, #100C
     ld hl, (sprites + 2 * 4)
     call Sprite.draw
     
@@ -31,12 +31,12 @@ main
   INCLUDE "utils.asm"
 
 
-  ORG $B900
+  ORG #B900
   ALIGN 2
 sprites
   INCBIN "../data/sprites.bin"
   
-  ORG $E300
+  ORG #E300
   ALIGN 8
 tiles
   INCBIN "../data/tiles.bin"
