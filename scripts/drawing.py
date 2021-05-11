@@ -25,6 +25,12 @@ def rotate(body: Body, axis_base: np.ndarray, axis_direction: np.ndarray, revolu
     facets = [np.matmul(f, transform) for f in body.facets]
     return Body(facets)
 
+def rotate_camera(camera: np.ndarray, axis_base: np.ndarray, axis_direction: np.ndarray, revolutions: float) -> np.ndarray:
+    transform = axangles.axangle2aff(axis_direction, tau * revolutions, axis_base).transpose()
+    rotated_camera = np.matmul(transform, camera)
+    return np.round(rotated_camera)
+
+
 def cuboid(x: float, y: float, z: float) -> Body:
     return Body([
         np.array([[0, 0, 0, 1], [0, 0, z, 1], [0, y, z, 1], [0, y, 0, 1]]),
@@ -92,7 +98,7 @@ for j, (body, axis_base_neg, axis_base_pos, axis_dir) in enumerate(cases):
         cv2.rectangle(roi, (0, 0), (sprite_w, sprite_h), 112)
         
         axis_base = axis_base_neg if i < 0 else axis_base_pos
-        rotated_body = rotate(body, axis_base, axis_dir, angle_delta * i)
-        draw_body(roi, camera, rotated_body)
+        rotated_camera = rotate_camera(camera, axis_base, axis_dir, angle_delta * i)
+        draw_body(roi, rotated_camera, body)
 
 cv2.imwrite('graphics/mat.png', img)
