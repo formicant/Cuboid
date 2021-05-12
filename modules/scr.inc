@@ -18,23 +18,32 @@ ccHeight EQU  24    ; Screen height in charcells
 
 ; Colors
 
-inkBlk EQU 0
-inkBlu EQU 1
-inkRed EQU 2
-inkMgn EQU 3
-inkGrn EQU 4
-inkCyn EQU 5
-inkYlw EQU 6
-inkWht EQU 7
+blk EQU 0
+blu EQU 1
+red EQU 2
+mgn EQU 3
+grn EQU 4
+cyn EQU 5
+ylw EQU 6
+wht EQU 7
 
-papBlk EQU inkBlk << 3
-papBlu EQU inkBlu << 3
-papRed EQU inkRed << 3
-papMgn EQU inkMgn << 3
-papGrn EQU inkGrn << 3
-papCyn EQU inkCyn << 3
-papYlw EQU inkYlw << 3
-papWht EQU inkWht << 3
+inkBlk EQU blk
+inkBlu EQU blu
+inkRed EQU red
+inkMgn EQU mgn
+inkGrn EQU grn
+inkCyn EQU cyn
+inkYlw EQU ylw
+inkWht EQU wht
+
+papBlk EQU blk << 3
+papBlu EQU blu << 3
+papRed EQU red << 3
+papMgn EQU mgn << 3
+papGrn EQU grn << 3
+papCyn EQU cyn << 3
+papYlw EQU ylw << 3
+papWht EQU wht << 3
 
 inkMask EQU inkWht
 papMask EQU papWht

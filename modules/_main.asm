@@ -1,6 +1,9 @@
   SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION
   DEVICE ZXSPECTRUM48
+
+  DEFINE DEBUG
   
+  INCLUDE "debug.inc"
   INCLUDE "scr.inc"
   
   ORG #8000
@@ -13,8 +16,7 @@ main
     ei
     
 .loop
-    ld a, 0
-    out (254), a
+    Debug.border Scr.grn
     push iy
     
     ld de, #100C
@@ -22,9 +24,9 @@ main
     call Sprite.draw
     
     pop iy
-    ld a, 7
-    out (254), a
+    Debug.border Scr.blk
     halt
+    
     jp .loop
   
   INCLUDE "sprite.asm"

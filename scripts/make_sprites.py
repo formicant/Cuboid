@@ -6,7 +6,7 @@ tile_h = 4
 sprite_w = 80
 sprite_h = 80
 sprite_cx = 4
-sprite_cy = 10
+sprite_cy = 11
 steps = 4
 cases_count = 10
 
