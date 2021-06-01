@@ -4,6 +4,7 @@
   DEFINE DEBUG
   
   INCLUDE "debug.inc"
+  INCLUDE "op.inc"
   INCLUDE "scr.inc"
   
   ORG #8000
@@ -15,22 +16,58 @@ main
     call Utils.drawBackground
     ei
     
-.loop
-    Debug.border Scr.grn
-    push iy
+    ; wait
+    ld b, 100
+.waitBefore
+    halt
+    djnz .waitBefore
     
-    ld de, #100C
-    ld hl, (sprites + 2 * 4)
+    ld hl, 13 _hl_ 8
+    call BgBuffer.fillFromScreen
+    
+.loop
+    ld b, 9
+    ld de, sprites
+    ld a, (de)
+    ld l, a
+    inc e
+    ld a, (de)
+    ld h, a
+    inc de
+    
+.spriteLoop
+    push bc, de
+    
+    ld de, #1010
+    halt
     call Sprite.draw
     
-    pop iy
-    Debug.border Scr.blk
-    halt
+    ; wait
+    ld bc, #000B
+.wait
+    djnz .wait
+    dec c
+    jr nz, .wait
     
+    call Sprite.clear
+    
+    pop de, bc
+    
+    ld a, (de)
+    ld l, a
+    inc e
+    ld a, (de)
+    ld h, a
+    inc de
+    
+    djnz .spriteLoop
     jp .loop
   
+  INCLUDE "stack.asm"
+  INCLUDE "bgBuffer.asm"
   INCLUDE "sprite.asm"
   INCLUDE "utils.asm"
+  INCLUDE "tile.asm"
 
 
   ORG #B900

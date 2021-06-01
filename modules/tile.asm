@@ -3,7 +3,7 @@
   ALIGN 256
 ; Screen addresses of each tile row (0..47)
 ; length: 96
-tileRowAddrTable
+rowAddrTable
     word #4000, #4400, #4020, #4420, #4040, #4440, #4060, #4460
     word #4080, #4480, #40A0, #44A0, #40C0, #44C0, #40E0, #44E0
     word #4800, #4C00, #4820, #4C20, #4840, #4C40, #4860, #4C60
