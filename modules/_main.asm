@@ -2,25 +2,24 @@
   DEVICE ZXSPECTRUM48
 
   DEFINE DEBUG
-  
+
+; Definitions
   INCLUDE "debug.inc"
   INCLUDE "op.inc"
   INCLUDE "scr.inc"
-  
-  ORG #8000
+  INCLUDE "stack.inc"
 
-stackTop
+; interrupt table and routine
+  ORG #8000
+  INCLUDE "interrupt.asm"
+
+; Entry point
 main
+    call Interrupt.initialize
+    
     ld a, Scr.papBlk | Scr.inkWht
     call Utils.setScreenAttr
     call Utils.drawBackground
-    ei
-    
-    ; wait
-    ld b, 100
-.waitBefore
-    halt
-    djnz .waitBefore
     
     ld hl, 13 _hl_ 8
     call BgBuffer.fillFromScreen
@@ -39,11 +38,14 @@ main
     push bc, de
     
     ld de, #1010
+    
+    ei
     halt
+    
     call Sprite.draw
     
     ; wait
-    ld bc, #000B
+    ld bc, #0008
 .wait
     djnz .wait
     dec c
@@ -62,19 +64,29 @@ main
     
     djnz .spriteLoop
     jp .loop
-  
-  INCLUDE "stack.asm"
+
+
+; Code modules
   INCLUDE "bgBuffer.asm"
   INCLUDE "sprite.asm"
-  INCLUDE "utils.asm"
   INCLUDE "tile.asm"
+  INCLUDE "utils.asm"
 
+; The stack is placed between
+; the interrupt table and the interrupt routine
+; max length is 59 words
+; or 63 words when the Interrupt.initialize is not needed anymore
+  ORG Interrupt.routine - 2
+  INCLUDE "stack.asm"
+
+
+; Data
 
   ORG #B900
   ALIGN 2
 sprites
   INCBIN "../data/sprites.bin"
-  
+
   ORG #E300
   ALIGN 8
 tiles
