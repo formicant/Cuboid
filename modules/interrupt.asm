@@ -7,7 +7,7 @@ table
     block 257, high($) + 1
 
 ; Sets the interrupt vector
-; Does not enable interrupts afterwards
+; (does not enable interrupts afterwards)
 initialize
     ld a, high(table)
     ld i, a
@@ -19,7 +19,7 @@ initialize
 
   ORG high($) _hl_ high($)
 ; Interrupt routine
-; Does not enable interrupts afterwards
+; (does not enable interrupts afterwards)
 routine
     di
     ret

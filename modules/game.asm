@@ -1,17 +1,17 @@
   MODULE Game
-  ; requires: Scr, Utils, BgBuffer, Sprite
+  ; requires: Scr, Utils, Data, BgBuffer, Sprite
 
 start
     ld a, Scr.papBlk | Scr.inkWht
     call Utils.setScreenAttr
     call Utils.drawBackground
     
-    ld hl, 13 _hl_ 8
+    ld hl, 13 _hl_ 7
     call BgBuffer.fillFromScreen
     
 .loop
     ld b, 9
-    ld de, sprites
+    ld de, Data.cuboid + 54
     ld a, (de)
     ld l, a
     inc e
@@ -30,7 +30,7 @@ start
     call Sprite.draw
     
     ; wait
-    ld bc, #0008
+    ld bc, #000B
 .wait
     djnz .wait
     dec c

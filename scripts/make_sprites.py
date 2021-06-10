@@ -1,24 +1,30 @@
+from dataclasses import dataclass
 import numpy as np
 import cv2
 
 tile_w = 8
 tile_h = 4
-sprite_w = 80
-sprite_h = 80
-sprite_cx = 4
-sprite_cy = 11
-steps = 4
-cases_count = 10
+
+
+class SpriteMap:
+    def __init__(self, name: str, sprite_size: tuple[int, int], sprite_offset: tuple[int, int]):
+        self.name = name
+        file = f'graphics/{name}.png'
+        self.image = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+        (self.sprite_w, self.sprite_h) = sprite_size
+        self.sprite_offset = sprite_offset
+        self.rows = self.image.shape[0] // tile_h // self.sprite_h
+        self.cols = self.image.shape[1] // tile_w // self.sprite_w
 
 
 class Sprite:
-    def __init__(self, sprite_tiling: np.ndarray) -> None:
+    def __init__(self, sprite_tiling: np.ndarray, sprite_offset: tuple[int, int]) -> None:
         (non_zero_cols,) = np.nonzero(sprite_tiling.max(axis=0))
         (non_zero_rows,) = np.nonzero(sprite_tiling.max(axis=1))
         x: int = non_zero_cols.min()
         y: int = non_zero_rows.min()
-        self.x = x - sprite_cx
-        self.y = y - sprite_cy
+        self.x = x - sprite_offset[0]
+        self.y = y - sprite_offset[1]
         self.w: int = 1 + non_zero_cols.max() - x
         self.h: int = 1 + non_zero_rows.max() - y
         self.tiling = sprite_tiling[y : y + self.h, x : x + self.w]
@@ -47,53 +53,97 @@ def get_tile_bytes(tile: np.ndarray) -> bytes:
         bs.append(tile_row_to_byte(tile[j], 240)) # actual pixels
     return bytes(bs)
 
+    
 
-img = cv2.imread('graphics/mat.png', cv2.IMREAD_GRAYSCALE)
+def get_image_tiling(image: np.ndarray, tiles: list[bytes]) -> np.ndarray:
+    tiling = np.zeros((image.shape[0] // tile_h, image.shape[1] // tile_w), 'int32')
+    
+    for j in range(tiling.shape[0]):
+        for i in range(tiling.shape[1]):
+            roi = image[tile_h * j : tile_h * (j + 1), tile_w * i : tile_w * (i + 1)]
+            tile = get_tile_bytes(roi)
+            existing = next((n for n in range(len(tiles)) if tiles[n] == tile), None)
+            if existing is not None:
+                tiling[j, i] = existing
+            else:
+                tiling[j, i] = len(tiles)
+                tiles.append(tile)
+    
+    return tiling
 
-tiles = [get_tile_bytes(np.full((tile_h, tile_w), 128, 'uint8'))]
-tiling = np.zeros((img.shape[0] // tile_h, img.shape[1] // tile_w), 'int32')
+def get_sprites(tiling: np.ndarray, tiles_org: int, map: SpriteMap, top: int) -> tuple[bytes, list[int]]:
+    sprites: list[Sprite] = []
+    sprite_addrs: list[int] = []
+    
+    addr = 0
+    for sj in range(map.rows):
+        for si in range(map.cols):
+            sprite_tiling = tiling[
+                map.sprite_h * sj : map.sprite_h * (sj + 1),
+                map.sprite_w * si : map.sprite_w * (si + 1)]
+            
+            sprite = Sprite(sprite_tiling, map.sprite_offset)
+            sprites.append(sprite)
+            sprite_addrs.append(addr)
+            addr += sprite.length
 
-for j in range(tiling.shape[0]):
-    for i in range(tiling.shape[1]):
-        roi = img[tile_h * j : tile_h * (j + 1), tile_w * i : tile_w * (i + 1)]
-        tile = get_tile_bytes(roi)
-        existing = next((n for n in range(len(tiles)) if tiles[n] == tile), None)
-        if existing is not None:
-            tiling[j, i] = existing
-        else:
-            tiling[j, i] = len(tiles)
-            tiles.append(tile)
+    sprite_bytes = bytes([])
+    for sprite in sprites:
+        sprite_bytes += sprite.get_bytes(tiles_org)
+    sprite_addrs = [top - len(sprite_bytes) + addr for addr in sprite_addrs]
+    
+    return (sprite_bytes, sprite_addrs)
+
+
+
+cuboidMap = SpriteMap('cuboid', (10, 18), (5, 9))
+blocksMap = SpriteMap('blocks', (6, 10), (2, 4))
+maps = [cuboidMap, blocksMap]
+
+def process_sprite_maps(ram_top: int):
+    empty_tile = get_tile_bytes(np.full((tile_h, tile_w), 128, 'uint8'))
+    tiles = [empty_tile]
+    tilings = [get_image_tiling(map.image, tiles) for map in maps]
+    
+    tiles_len = 8 * len(tiles)
+    tiles_org = ram_top - tiles_len
+    with open('data/tiles.bin', 'wb') as tiles_file:
+        for tile in tiles:
+            tiles_file.write(tile)
+    
+    top = tiles_org
+    sprites = bytes([])
+    sprite_table: list[list[int]] = []
+    for (map, tiling) in zip(maps, tilings):
+        (sprite_bytes, sprite_addrs) = get_sprites(tiling, tiles_org, map, top)
+        top -= len(sprite_bytes)
+        sprites = sprite_bytes + sprites
+        sprite_table.append(sprite_addrs)
         
-tiles_org = 0xE300
-sprites_org = 0xB900
-
-print(f'tiles.bin:   {tiles_org}, {8 * len(tiles)}')
-with open('data/tiles.bin', 'wb') as tiles_file:
-    for tile in tiles:
-        tiles_file.write(tile)
-
-sprites: list[Sprite] = []
-sprite_table: list[int] = []
-
-sprite_addr = sprites_org + 2 * cases_count * (2 * steps + 1)
-sprite_tiles_w = sprite_w // tile_w
-sprite_tiles_h = sprite_h // tile_h
-for sj in range(cases_count):
-    for si in range(2 * steps + 1):
-        sprite_tiling = tiling[
-            sprite_tiles_h * sj : sprite_tiles_h * (sj + 1),
-            sprite_tiles_w * si : sprite_tiles_w * (si + 1)]
+    sprites_org = top
+    with open('data/sprites.bin', 'wb') as sprites_file:
+        sprites_file.write(sprites)
+    
+    with open('modules/data.asm', 'w') as asm_file:
+        asm_file.write('; Generated by the Python script\n  MODULE Data\n')
         
-        sprite = Sprite(sprite_tiling)
-        sprites.append(sprite)
-        sprite_table.append(sprite_addr % 256)
-        sprite_table.append(sprite_addr // 256)
-        sprite_addr += sprite.length
+        for (map, sprite_addrs) in zip(maps, sprite_table):
+            asm_file.write(f'\n{map.name}\n')
+            for sj in range(map.rows):
+                values = ', '.join(f'#{addr:2X}' for addr in sprite_addrs[map.cols * sj : map.cols * (sj + 1)])
+                asm_file.write(f'  word {values}\n')
+        
+        asm_file.write(rf"""
 
-sprite_bytes = bytes(sprite_table)
-for sprite in sprites:
-    sprite_bytes += sprite.get_bytes(tiles_org)
+  ORG #{sprites_org:4X}
+  ALIGN 2
+sprites
+  INCBIN "../data/sprites.bin"
 
-print(f'sprites.bin: {sprites_org}, {len(sprite_bytes)}')
-with open('data/sprites.bin', 'wb') as sprites_file:
-    sprites_file.write(sprite_bytes)
+  ORG #{tiles_org:4X}
+  ALIGN 8
+tiles
+  INCBIN "../data/tiles.bin"
+
+  ENDMODULE
+""")

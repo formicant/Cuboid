@@ -59,62 +59,46 @@ def draw_body(img: np.ndarray, camera: np.ndarray, body: Body) -> None:
 # ------------------------
 
 camera = np.array([
-    [16, -4],
-    [-8, -8],
+    [-16, 4],
+    [8, 8],
     [0, -16],
-    [32.5, 59.5]])
+    [48.5, 40.5]])
 
 cases = [
-    (cuboid(2, 1, 1), np.array([0, 0, 0]), np.array([2, 0, 0]), np.array([0, 1, 0])),
-    (cuboid(2, 1, 1), np.array([1, 0, 0]), np.array([1, 0, 0]), np.array([0, 1, 0])),
-    (cuboid(2, 1, 1), np.array([0, 0, 0]), np.array([0, 1, 0]), np.array([-1, 0, 0])),
-    (cuboid(1, 2, 1), np.array([0, 0, 0]), np.array([1, 0, 0]), np.array([0, 1, 0])),
-    (cuboid(1, 2, 1), np.array([0, 0, 0]), np.array([0, 2, 0]), np.array([-1, 0, 0])),
-    (cuboid(1, 2, 1), np.array([0, 1, 0]), np.array([0, 1, 0]), np.array([-1, 0, 0])),
     (cuboid(1, 1, 2), np.array([0, 0, 0]), np.array([1, 0, 0]), np.array([0, 1, 0])),
-    (cuboid(1, 1, 2), np.array([0, 0, 1]), np.array([1, 0, 1]), np.array([0, 1, 0])),
+    (cuboid(1, 2, 1), np.array([0, 0, 0]), np.array([0, 2, 0]), np.array([-1, 0, 0])),
+    (cuboid(2, 1, 1), np.array([0, 0, 0]), np.array([2, 0, 0]), np.array([0, 1, 0])),
     (cuboid(1, 1, 2), np.array([0, 0, 0]), np.array([0, 1, 0]), np.array([-1, 0, 0])),
+    
+    (cuboid(1, 2, 1), np.array([0, 0, 0]), np.array([1, 0, 0]), np.array([0, 1, 0])),
+    (cuboid(2, 1, 1), np.array([0, 0, 0]), np.array([0, 1, 0]), np.array([-1, 0, 0])),
+    
+    (cuboid(1, 1, 2), np.array([0, 0, 1]), np.array([1, 0, 1]), np.array([0, 1, 0])),
+    (cuboid(1, 2, 1), np.array([0, 1, 0]), np.array([0, 1, 0]), np.array([-1, 0, 0])),
+    (cuboid(2, 1, 1), np.array([1, 0, 0]), np.array([1, 0, 0]), np.array([0, 1, 0])),
     (cuboid(1, 1, 2), np.array([0, 0, 1]), np.array([0, 1, 1]), np.array([-1, 0, 0])),
 ]
 
-sprite_w = 80
-sprite_h = 80
-steps = 4
 
-img_w = sprite_w * (2 * steps + 1)
-img_h = sprite_h * len(cases)
-img = np.full((img_h, img_w), 128, 'uint8')
-
-draw_grid(img, 8, 4)
-
-angle_delta = 1 / 4 / (2 * steps + 1)
-
-for j, (body, axis_base_neg, axis_base_pos, axis_dir) in enumerate(cases):
-    y = sprite_h * j
+def draw_cuboid_sprite_map(filename: str, steps: int, sprite_w: int, sprite_h: int) -> None:
+    img_w = sprite_w * (2 * steps + 1)
+    img_h = sprite_h * len(cases)
+    img = np.full((img_h, img_w), 128, 'uint8')
     
-    for i in range(-steps, steps + 1):
-        x = sprite_w * (steps + i)
-        roi = img[y : y + sprite_h, x : x + sprite_w]
-        cv2.rectangle(roi, (0, 0), (sprite_w, sprite_h), 112)
-        
-        axis_base = axis_base_neg if i < 0 else axis_base_pos
-        rotated_camera = rotate_camera(camera, axis_base, axis_dir, angle_delta * i)
-        draw_body(roi, rotated_camera, body)
-
-cv2.imwrite('graphics/mat.png', img)
-
-tmp = np.full((img_h, img_w + sprite_w), 128, 'uint8')
-draw_grid(tmp, 8, 4)
-for j, (body, axis_base_neg, axis_base_pos, axis_dir) in enumerate(cases):
-    y = sprite_h * j
+    draw_grid(img, 8, 4)
     
-    for i in range(0, 2 * steps + 2):
-        x = sprite_w * i
-        roi = tmp[y : y + sprite_h, x : x + sprite_w]
-        cv2.rectangle(roi, (0, 0), (sprite_w, sprite_h), 112)
+    angle_delta = 1 / 4 / (2 * steps + 1)
+    
+    for j, (body, axis_base_neg, axis_base_pos, axis_dir) in enumerate(cases):
+        y = sprite_h * j
         
-        axis_base = axis_base_neg if i < 0 else axis_base_pos
-        rotated_camera = rotate_camera(camera, axis_base, axis_dir, angle_delta * i)
-        draw_body(roi, rotated_camera, body)
-
-cv2.imwrite('graphics/tmp.png', tmp)
+        for i in range(-steps, steps + 1):
+            x = sprite_w * (steps + i)
+            roi = img[y : y + sprite_h, x : x + sprite_w]
+            cv2.rectangle(roi, (0, 0), (sprite_w, sprite_h), 112)
+            
+            axis_base = axis_base_neg if i < 0 else axis_base_pos
+            rotated_camera = rotate_camera(camera, axis_base, axis_dir, angle_delta * i)
+            draw_body(roi, rotated_camera, body)
+    
+    cv2.imwrite(filename, img)

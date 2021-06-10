@@ -9,7 +9,7 @@
   INCLUDE "scr.inc"
   INCLUDE "stack.inc"
 
-; interrupt table and routine
+; Interrupt table and routine
   ORG #8000
   INCLUDE "interrupt.asm"
 
@@ -26,25 +26,15 @@ main
   INCLUDE "utils.asm"
 codeEnd
 
+; Data module
+  INCLUDE "data.asm"
+
 ; The stack is placed between
 ; the interrupt table and the interrupt routine
 ; max length is 59 words
 ; or 63 words when the Interrupt.initialize is not needed anymore
   ORG Interrupt.routine
   INCLUDE "stack.asm"
-
-
-; Data
-
-  ORG #B900
-  ALIGN 2
-sprites
-  INCBIN "../data/sprites.bin"
-
-  ORG #E300
-  ALIGN 8
-tiles
-  INCBIN "../data/tiles.bin"
 
 
   DISPLAY "codeEnd: ", codeEnd
