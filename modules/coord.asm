@@ -12,7 +12,7 @@ z   byte -0
 ; spoils: af
 getTileCoords
     ld a, (x)
-    sla a
+    rlca
     ld d, a
     ld a, (y)
     sub d
@@ -20,7 +20,7 @@ getTileCoords
     ld d, a         ; d: center - 2x + y
     
     ld a, (z)
-    sla a
+    rlca
     ld e, a
     ld a, (y)
     sub e
