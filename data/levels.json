@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Level One",
+    "blocks": [
+      " ...... ...l.. ...... ...... ...... ...... ",
+      " ...... ...l.. ...... ...... ...... ...... ",
+      " b....o ..dl.. ..ob.. ...... l....d l....d ",
+      " llllll llllll llllll llllll llllll llllll "
+    ]
+  },
+  {
+    "name": "Level Two",
+    "blocks": [
+      " ...... ...l.. ...... ...... ...... ...... ",
+      " ...... ...l.. ...... ...... ...... ...... ",
+      " b....o ..dl.. ..ob.. ...... l....d l....d ",
+      " llllll llllll llllll llllll llllll llllll "
+    ]
+  }
+]

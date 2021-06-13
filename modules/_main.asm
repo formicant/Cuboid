@@ -21,13 +21,16 @@ main
 
 ; Code modules
   INCLUDE "bgBuffer.asm"
+  INCLUDE "blocks.asm"
   INCLUDE "sprite.asm"
   INCLUDE "tile.asm"
+  INCLUDE "coord.asm"
   INCLUDE "utils.asm"
 codeEnd
 
-; Data module
-  INCLUDE "data.asm"
+; Data modules
+  INCLUDE "graphics.asm"
+  INCLUDE "level.asm"
 
 ; The stack is placed between
 ; the interrupt table and the interrupt routine
@@ -38,4 +41,5 @@ codeEnd
 
 
   DISPLAY "codeEnd: ", codeEnd
+  DISPLAY "@stackTop: ", @stackTop
   SAVESNA "cuboid.sna", main

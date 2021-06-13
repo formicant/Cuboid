@@ -2,3 +2,4 @@
 *.sna
 .mypy_cache
 .tmp
+scripts/__pycache__

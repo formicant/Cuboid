@@ -6,8 +6,8 @@ buffer              ; tiles of the rectangle by rows
     block 512       ; 8×16 tiles = 8×8 charcells = 64×64 px
 
 oxy
-oy  byte 0          ; top of the buffered screen rectangle in tiles
-ox  byte 0          ; left of the buffered screen rectangle in tiles
+oy  byte -0         ; top of the buffered screen rectangle in tiles
+ox  byte -0         ; left of the buffered screen rectangle in tiles
 
 ; Fills the buffer with the screen pixels
 ; < hl: x, y coodrs of the top-left corner of the rectangle
