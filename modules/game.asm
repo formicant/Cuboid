@@ -4,12 +4,11 @@
 start
     ld a, Scr.papBlk | Scr.inkWht | Scr.bright
     call Utils.setScreenAttr
-    ;call Utils.drawBackground
+    call Utils.drawBackground
     
     call Blocks.drawLevel
-    halt
     
-    ld hl, 13 _hl_ 7
+    ld hl, 12 _hl_ 12
     call BgBuffer.fillFromScreen
     
 .loop
@@ -22,10 +21,17 @@ start
     ld h, a
     inc de
     
+    ld a, 8
+    ld (Coord.x), a
+    ld a, 8
+    ld (Coord.y), a
+    ld a, 9
+    ld (Coord.z), a
+    
 .spriteLoop
     push bc, de
     
-    ld de, #1010
+    call Coord.getTileCoords
     
     ei
     halt
