@@ -7,6 +7,7 @@
   INCLUDE "debug.inc"
   INCLUDE "op.inc"
   INCLUDE "scr.inc"
+  INCLUDE "dir.inc"
   INCLUDE "stack.inc"
 
 ; Interrupt table and routine
@@ -15,11 +16,12 @@
 
 ; Entry point
 main
+    ld sp, Stack.top
     call Interrupt.initialize
-  
-  INCLUDE "game.asm"
+    jp Game.start
 
 ; Code modules
+  INCLUDE "game.asm"
   INCLUDE "bgBuffer.asm"
   INCLUDE "blocks.asm"
   INCLUDE "sprite.asm"
@@ -41,5 +43,4 @@ codeEnd
 
 
   DISPLAY "codeEnd: ", codeEnd
-  DISPLAY "@stackTop: ", @stackTop
   SAVESNA "cuboid.sna", main

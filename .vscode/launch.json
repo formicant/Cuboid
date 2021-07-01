@@ -35,7 +35,7 @@
                 "esxdosRst": true
             },
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "stackTop",
+            "topOfStack": "Stack.top",
             "load": "cuboid.sna",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
