@@ -27,6 +27,7 @@ main
   INCLUDE "sprite.asm"
   INCLUDE "tile.asm"
   INCLUDE "coord.asm"
+  INCLUDE "transition.asm"
   INCLUDE "utils.asm"
 codeEnd
 

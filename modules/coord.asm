@@ -1,10 +1,15 @@
   MODULE Coord
   ; requires: Scr
 
+  ALIGN 2
 spatial
 x   byte -0
 y   byte -0
 z   byte -0
+
+orientation
+    byte -0         ; can be Dir.xPos, Dir.yPos, or Dir.zPos
+
 
 ; Converts spatial (x, y, z) coords to tile (x, y) coords
 ; < (x), (y), (z): spatial coords

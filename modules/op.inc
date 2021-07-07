@@ -33,5 +33,61 @@
   MACRO Op.add_hl_a
     Op.add_rr_a h, l
   ENDM
-    
+  
+  
+  MACRO Op.sub_rr_a regH, regL
+    sub regL
+    ld regL, a
+    sbc regH
+    add a, regL
+    ld regH, a
+  ENDM
+  
+  ; bc <- bc - a
+  ; spoils: af
+  ; time: 20, length: 5
+  MACRO Op.sub_bc_a
+    Op.sub_rr_a b, c
+  ENDM
+  
+  ; de <- de - a
+  ; spoils: af
+  ; time: 20, length: 5
+  MACRO Op.sub_de_a
+    Op.sub_rr_a d, e
+  ENDM
+  
+  ; hl <- hl - a
+  ; spoils: af
+  ; time: 20, length: 5
+  MACRO Op.sub_hl_a
+    Op.sub_rr_a h, l
+  ENDM
+  
+  
+  ; a <- reg * const
+  ; returns junk if the product does not fit 8 bits
+  ; const < 256, reg is not a
+  ; spoils: f
+  MACRO Op.mulConst reg, const
+  IF const > 0
+.mask = #80
+  WHILE (const & .mask) == 0
+.mask = .mask / 2
+  ENDW
+    ld a, reg
+.mask = .mask / 2
+  WHILE .mask > 0
+    rlca
+  IF (const & .mask) != 0
+    add a, reg
+  ENDIF
+.mask = .mask / 2
+  ENDW
+  ELSE
+    xor a
+  ENDIF
+  ENDM
+
+
   ENDMODULE
