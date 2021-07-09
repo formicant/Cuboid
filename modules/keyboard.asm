@@ -35,6 +35,13 @@ getKeys
     sub 1
     rl e
     
+    ; check if more than one key is pressed
+    ld a, e
+    dec a
+    and e
+    ret z
+    
+    ld e, 0
     ret
 
 

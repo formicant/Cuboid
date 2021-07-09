@@ -36,30 +36,30 @@
   
   
   MACRO Op.sub_rr_a regH, regL
-    sub regL
-    ld regL, a
-    sbc regH
-    add a, regL
-    ld regH, a
+    neg
+    jr z, .skip
+    dec h
+    Op.add_rr_a regH, regL
+.skip
   ENDM
   
   ; bc <- bc - a
   ; spoils: af
-  ; time: 20, length: 5
+  ; time: 39, length: 10
   MACRO Op.sub_bc_a
     Op.sub_rr_a b, c
   ENDM
   
   ; de <- de - a
   ; spoils: af
-  ; time: 20, length: 5
+  ; time: 39, length: 10
   MACRO Op.sub_de_a
     Op.sub_rr_a d, e
   ENDM
   
   ; hl <- hl - a
   ; spoils: af
-  ; time: 20, length: 5
+  ; time: 39, length: 10
   MACRO Op.sub_hl_a
     Op.sub_rr_a h, l
   ENDM

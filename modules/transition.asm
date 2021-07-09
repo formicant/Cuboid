@@ -46,9 +46,9 @@ performStep
     
     ; draw sprite
     ld de, (currentPhase.tileCoords)
-    call Sprite.draw
     ei
     halt
+    call Sprite.draw
     
     ; increment sprite pointer
     pop hl
@@ -121,13 +121,15 @@ prepare
     
     ld a, Dir.xNeg | Dir.yNeg
     and c
-    ld a, steps * 2
     jr nz, .negDir
 .posDir
-    Op.sub_hl_a
+    ld a, -steps * 2
+    dec h
+    Op.add_hl_a
     ld a, 1         ; a: positive increment
     jp .endDir
 .negDir
+    ld a, steps * 2
     Op.add_hl_a
     ld a, -1        ; a: negative increment
 .endDir
