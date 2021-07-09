@@ -4,94 +4,92 @@
 steps EQU 4
 
     ALIGN 2
-currentSprite
-    word -0
-secondPhaseSprite
-    word -0
-coordDelta
-.x  byte -0
-.y  byte -0
-.z  byte -0
-stepsToMake
+currentPhase
+.steps
     byte -0
-isNegative
+.increment
     byte -0
+.sprite
+    word -0
+.tileCoords
+    word -0
 
+nextPhase
+.steps
+    byte -0
+.increment
+    byte -0
+.sprite
+    word -0
+.tileCoords
+    word -0
 
 ; Moves the cuboid and changes its coords
 perform
-    ld a, steps + 1
-    ld (stepsToMake), a
-    
-.firstPhase
     call performStep
-    ld a, (stepsToMake)
-    dec a
-    ld (stepsToMake), a
-    jp nz, .firstPhase
-    
-    ld hl, (secondPhaseSprite)
-    ld (currentSprite), hl
-    ld a, steps + 1
-    ld (stepsToMake), a
-    
-    ; change coords
-    ld hl, Coord.spatial
-    ld de, coordDelta
-  DUP 3             ; TODO: optimize
-    ld a, (de)
-    add a, (hl)
-    ld (hl), a
-    inc de
-    inc hl
-  EDUP
-    
-.secondPhase
-    call performStep
-    ld a, (stepsToMake)
-    dec a
-    ld (stepsToMake), a
-    jp nz, .secondPhase
+    or a
+    jp nz, perform
     
     ret
 
 
+; Draws the next cuboid sprite of the transition
+; > a: current phase steps left (0 if the transition ended)
 performStep
-    ld hl, (currentSprite)
+    ; get sprite addr
+    ld hl, (currentPhase.sprite)
     push hl
     ld e, (hl)
     inc l
     ld d, (hl)
     ex de, hl       ; hl: sprite addr
     
-    call Coord.getTileCoords
+    ; draw sprite
+    ld de, (currentPhase.tileCoords)
     call Sprite.draw
-  DUP 1
     ei
     halt
-  EDUP
     
+    ; increment sprite pointer
     pop hl
-    ld a, (isNegative)
+    ld a, (currentPhase.increment)
     or a
-    jr z, .positive
+    jp p, .positive
 .negative
     dec hl
     dec l
-    ld (currentSprite), hl
-    ret
+    ld (currentPhase.sprite), hl
+    jp .endIncrement
 .positive
     inc l
     inc hl
-    ld (currentSprite), hl
+    ld (currentPhase.sprite), hl
+.endIncrement
+    
+    ; decrement steps
+    ld a, (currentPhase.steps)
+    dec a
+    ld (currentPhase.steps), a
+    ret nz
+    
+    ld a, (nextPhase.steps)
+    or a
+    call nz, prepareSecondPhase
+    
     ret
 
 
-; Calculates values for a transition
+; Calculates values for transition phases
 ; < c: direction
 ; spoils: af, b, hl
 prepare
+    ; set each phase step count
+    ld a, steps + 1
+    ld (currentPhase.steps), a
+    ld (nextPhase.steps), a
+    
     ; calculate sprite row offset
+    ; (an intermediate value in sprite row calculation)
     ld b, 0
     ld a, Dir.maskY
     and c
@@ -111,7 +109,7 @@ prepare
     push bc
     call getSprite
     ; hl: first phase initial sprite
-    ld (currentSprite), hl
+    ld (currentPhase.sprite), hl
     pop bc
     
     ; second phase
@@ -127,30 +125,50 @@ prepare
     jr nz, .negDir
 .posDir
     Op.sub_hl_a
-    xor a
+    ld a, 1         ; a: positive increment
     jp .endDir
 .negDir
     Op.add_hl_a
-    ld a, 1
+    ld a, -1        ; a: negative increment
 .endDir
     ; hl: second phase initial sprite
-    ld (secondPhaseSprite), hl
-    ld (isNegative), a
+    ld (nextPhase.sprite), hl
+    ld (currentPhase.increment), a
+    ld (nextPhase.increment), a
     
-    call prepareCoordDelta
+    ; calculate tile coords
+    call Coord.getTileCoords
+    ld (currentPhase.tileCoords), de
+    call changeCoords
+    call Coord.getTileCoords
+    ld (nextPhase.tileCoords), de
+    
     ret
 
 
-prepareCoordDelta
-    ; zeroing
-    ld ix, coordDelta.z
-    ld hl, coordDelta.z
-    ld (hl), 0
-    dec hl
-    ld (hl), 0
-    dec l
-    ld (hl), 0
+; Copies next phase prepared data to current phase
+; spoils: hl
+prepareSecondPhase
+    ; copy next phase values to current phase
+    ld hl, (nextPhase.steps)
+    ld (currentPhase.steps), hl
+    ld hl, (nextPhase.sprite)
+    ld (currentPhase.sprite), hl
+    ld hl, (nextPhase.tileCoords)
+    ld (currentPhase.tileCoords), hl
     
+    ; zero next phase steps
+    ld hl, nextPhase.steps
+    ld (hl), 0
+    ret
+
+
+; Changes the cuboid coords and orientation
+; according to the transition
+; < c: direction
+; spoils: af, b, hl
+changeCoords
+    ld hl, Coord.spatial
     ld b, Dir.xPos
     ld a, Dir.maskY
     and c
@@ -158,18 +176,22 @@ prepareCoordDelta
     inc l
     ld b, Dir.yPos
 .notY
+    ; hl: Coord.x if dir x; Coord.y if dir y
+    ; b: Dir.xPos if dir x; Dir.yPos if dir y
     
     ld a, Dir.xNeg | Dir.yNeg
     and c
     jr nz, .dirNeg
     
 .dirPos
+    ; inc x/y coord if dir is same as orientation
     ld a, (Coord.orientation)
     and c
     and Dir.maskX | Dir.maskY
     jr z, .notSame
     inc (hl)
 .notSame
+    ; inc x/y coord if not dir z
     ld a, Dir.maskZ
     and c
     jr nz, .dirEnd
@@ -177,22 +199,24 @@ prepareCoordDelta
     jp .dirEnd
     
 .dirNeg
+    ; dec x/y coord if orientation z
     ld a, (Coord.orientation)
     and Dir.maskZ
     jr z, .notOrientZ
     dec (hl)
 .notOrientZ
+    ; dec x/y coord if not dir z
     ld a, Dir.maskZ
     and c
     jr nz, .dirEnd
     dec (hl)
 .dirEnd
     
-    ld hl, coordDelta.z
+    ; inc/dec z coord if dir z
+    ld hl, Coord.z
     ld a, Dir.maskZ
     and c
     jr z, .reorient
-    
     ld a, (Coord.orientation)
     and Dir.maskZ
     jr z, .negZ
@@ -252,5 +276,6 @@ getSprite
     ld hl, Graphics.cuboid
     Op.add_hl_a     ; hl: sprite table cell addr
     ret
+
 
   ENDMODULE
