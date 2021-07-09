@@ -22,9 +22,24 @@ start
     ld a, Dir.zPos
     ld (Coord.orientation), a
     
+    ; get sprite addr
+    ld hl, Graphics.cuboid + 8
+    ld e, (hl)
+    inc l
+    ld d, (hl)
+    ex de, hl       ; hl: sprite addr
+    
+    call Coord.getTileCoords
+    call Sprite.draw
+    
 .loop
     ; dir
-    ld c, Dir.xNeg
+    call Keyboard.getKeys
+    xor a
+    or e
+    jp z, .loop
+    
+    ld c, e
     call Transition.prepare
     call Transition.perform
     jp .loop

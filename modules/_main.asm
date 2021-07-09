@@ -28,6 +28,7 @@ main
   INCLUDE "tile.asm"
   INCLUDE "coord.asm"
   INCLUDE "transition.asm"
+  INCLUDE "keyboard.asm"
   INCLUDE "utils.asm"
 codeEnd
 
