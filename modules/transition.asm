@@ -4,6 +4,22 @@
 steps EQU 4
 
     ALIGN 2
+
+bufferOffsets
+    ; dir:   pos       neg
+    ;     left top  left top
+    byte    5,  9,    1, 10
+    byte    2,  6,    3,  9
+    byte    5,  8,    3, 10
+    byte    2,  7,    4, 10
+    byte    4,  6,    2,  7
+    byte    4,  6,    5,  8
+    byte    4, 10,    3, 10
+    byte    3,  4,    3,  6
+    byte    5,  5,    4,  6
+    byte    3, 10,    4, 10
+
+
 currentPhase
 .steps
     byte -0
@@ -23,6 +39,7 @@ nextPhase
     word -0
 .tileCoords
     word -0
+
 
 ; Moves the cuboid and changes its coords
 perform
@@ -81,7 +98,8 @@ performStep
 
 ; Calculates values for transition phases
 ; < c: direction
-; spoils: af, b, hl
+; > hl: buffer coord offsets
+; spoils: af, b, hl, de
 prepare
     ; set each phase step count
     ld a, steps + 1
@@ -110,6 +128,8 @@ prepare
     call getSprite
     ; hl: first phase initial sprite
     ld (currentPhase.sprite), hl
+    ld e, d
+    ; e: sprite row
     pop bc
     
     ; second phase
@@ -127,16 +147,32 @@ prepare
     dec h
     Op.add_hl_a
     ld a, 1         ; a: positive increment
+    ld d, 0         ; d: bffer offset
     jp .endDir
 .negDir
     ld a, steps * 2
     Op.add_hl_a
     ld a, -1        ; a: negative increment
+    ld d, 2         ; d: bffer offset
 .endDir
     ; hl: second phase initial sprite
     ld (nextPhase.sprite), hl
     ld (currentPhase.increment), a
     ld (nextPhase.increment), a
+    
+    ; buffer offset
+    ld a, e
+  .2 rlca
+    add a, d
+    ld hl, bufferOffsets
+    Op.add_hl_a
+    ; hl: buffer offset addr
+    ld d, (hl)
+    inc l
+    ld e, (hl)
+    ex de, hl
+    ; hl: buffer offset coords
+    push hl
     
     ; calculate tile coords
     call Coord.getTileCoords
@@ -145,6 +181,7 @@ prepare
     call Coord.getTileCoords
     ld (nextPhase.tileCoords), de
     
+    pop hl
     ret
 
 
@@ -246,6 +283,7 @@ changeCoords
 ; < c: direction
 ;   b: sprite row offset
 ; > hl: sprite table cell addr
+;   d: sprite row
 ; spoils: af, b
 getSprite
     ; b := b mod 6
@@ -271,6 +309,7 @@ getSprite
     ld b, a
 .notZ
     ; b: sprite row
+    ld d, b
     
     Op.mulConst b, 2 * steps + 1
     add a, steps    ; a: index of the center sprite in the row

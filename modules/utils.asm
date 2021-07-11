@@ -11,12 +11,31 @@ setScreenAttr IFUSED
     ld d, a
     ld e, a
 .loop
-    .(Scr.ccWidth / 2) push de
+  .(Scr.ccWidth / 2) push de
     djnz .loop
     
     Stack.restore
     ret
   ENDIF
+
+
+; Sets all pixels of the screen
+; < a: pixel byte
+; spoils: b, de
+setScreenPixels IFUSED
+    Stack.store
+    ld sp, Scr.attrStart
+    ld b, Scr.height
+    ld d, a
+    ld e, a
+.loop
+  .(Scr.ccWidth / 2) push de
+    djnz .loop
+    
+    Stack.restore
+    ret
+  ENDIF
+
 
 ; spoils: b, de
 drawBrightGrid IFUSED
@@ -33,7 +52,8 @@ drawBrightGrid IFUSED
     Stack.restore
     ret
   ENDIF
-  
+
+
 ; spoils: bc, de, hl
 drawBackground IFUSED
     Stack.store

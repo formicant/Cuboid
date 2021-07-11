@@ -5,6 +5,7 @@ start
     ld a, Scr.papBlk | Scr.inkWht | Scr.bright
     call Utils.setScreenAttr
     ; call Utils.drawBackground
+    ; call Utils.drawBrightGrid
     
     call Blocks.drawLevel
     
@@ -41,9 +42,61 @@ start
     
     ld c, e
     call Transition.prepare
+    call drawBuffer
     call Transition.perform
     jp .loop
+
+
+drawBuffer
+    ld a, Scr.papBlk | Scr.inkWht
+    call Utils.setScreenAttr
     
+    ld a, (Transition.currentPhase.tileCoords)
+    sub l
+    ld d, a
+    xor a
+    ld c, a
+    srl d
+    rl c
+  DUP 3
+    srl d
+    rra
+  EDUP
+    ld e, a
+    ld a, (Transition.currentPhase.tileCoords + 1)
+    sub h
+    add a, e
+    ld e, a
+    
+    ld hl, Scr.attrStart
+    add hl, de
+    
+    push bc
+    ld de, 24
+    ld b, 8
+    ld a, Scr.papBlu | Scr.inkYlw
+.loop
+    srl c
+    jr c, .full
+    ld a, Scr.papBlu | Scr.inkYlw | Scr.bright
+.full
+  DUP 8
+    ld (hl), a
+    inc l
+  EDUP
+    add hl, de
+    djnz .loop
+    
+    pop bc
+    srl c
+    ret nc
+    ld a, Scr.papBlu | Scr.inkYlw
+  DUP 8
+    ld (hl), a
+    inc l
+  EDUP
+    
+    ret
 
 
   ENDMODULE
