@@ -1,6 +1,24 @@
   MODULE Coord
   ; requires: Scr
 
+; (x, y, z) — spacial block coords
+; (u, v) — screen tile coords
+;
+; +——— u      z
+; |           |
+; v           |
+;             |
+;          ___| (cu,cv)
+;  x ———‾‾‾    \
+;               \
+;                y
+;
+; u = cu - 2x + y
+; v = cv + x + 2y - 4z
+
+cu EQU 23
+cv EQU 33
+
   ALIGN 2
 spatial
 x   byte -0
@@ -11,9 +29,9 @@ orientation
     byte -0         ; can be Dir.xPos, Dir.yPos, or Dir.zPos
 
 
-; Converts spatial (x, y, z) coords to tile (x, y) coords
-; < (x), (y), (z): spatial coords
-; > de: tile xy coords
+; Converts spacial (x, y, z) coords to tile (u, v) coords
+; < (x), (y), (z): spacial coords
+; > de: tile uv coords
 ; spoils: af
 getTileCoords
     ld a, (x)
@@ -21,8 +39,8 @@ getTileCoords
     ld d, a
     ld a, (y)
     sub d
-    add a, 23
-    ld d, a         ; d: center - 2x + y
+    add a, cu
+    ld d, a         ; d: cu - 2x + y
     
     ld a, (z)
     rlca
@@ -33,8 +51,8 @@ getTileCoords
     ld e, a
     ld a, (x)
     add a, e
-    add a, 33
-    ld e, a         ; e: center + x + 2y - 4z
+    add a, cv
+    ld e, a         ; e: cv + x + 2y - 4z
     
     ret
 

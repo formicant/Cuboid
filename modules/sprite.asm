@@ -3,8 +3,8 @@
 
 ; Draws a sprite on the screen
 ; < hl: sprite addr
-;   d: x coord in tiles
-;   e: y coord in tiles
+;   d: u coord in tiles
+;   e: v coord in tiles
 ; spoils: af, bc, de, hl, ix
 draw
     Debug.borderA Scr.blu
@@ -27,11 +27,11 @@ draw
     ; get sprite top-left coords
     ld a, d
     add a, h
-    ld (.left), a   ; x coord of the left side of the sprite
+    ld (.left), a   ; u coord of the left side of the sprite
     ld (clear.left), a
     ld (clear.sLeft), a
     ld a, e         ; de is free now
-    add a, l        ; a: y coord of the top of the sprite
+    add a, l        ; a: v coord of the top of the sprite
     ; get addr in rowAddrTable
     ld (clear.sTop), a
     rlca            ; a *= 2
@@ -46,7 +46,7 @@ draw
     ld d, (ix)
     inc ix
 .left+1
-    add a, -0       ; add x coord of the left side of the sprite
+    add a, -0       ; add u coord of the left side of the sprite
     ld e, a         ; de: screen addr
     
 .drawTile
@@ -83,7 +83,7 @@ draw
 clear
     Debug.borderA Scr.blu
     
-    ld hl, (BgBuffer.oxy)
+    ld hl, (BgBuffer.coords)
 .sLeft+1
     ld a, -0
     sub h
@@ -96,8 +96,21 @@ clear
     .3 rrca
     add a, h        ; a: offset in the buffer
     
-    ld hl, BgBuffer.buffer
+    ld hl, BgBuffer.start
+    ld e, (hl)
+    inc l
+    ld d, (hl)
+    ex de, hl
     Op.add_hl_a     ; hl: addr in the buffer
+    
+    ;;///
+    ; ld a, (BgBuffer.offset)
+    ; rlca
+    ; rla
+    ; ld l, a
+    ; ld a, high(BgBuffer.buffer)
+    ; adc a, 0
+    ;;///
     
 .height+1
     ld c, -0        ; c: sprite height
@@ -115,7 +128,7 @@ clear
     ld d, (ix)
     inc ix
 .left+1
-    add a, -0       ; add x coord of the left side of the sprite
+    add a, -0       ; add u coord of the left side of the sprite
     ld e, a         ; de: screen addr
     
 .width+1
@@ -136,7 +149,8 @@ clear
     inc e           ; move right
     inc hl
     djnz .clearTile
-
+    
+    BgBuffer.wrapRow h
 .margin+1
     ld a, -0
     Op.add_hl_a     ; hl: new line in the buffer

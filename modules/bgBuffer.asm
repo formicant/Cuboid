@@ -1,24 +1,37 @@
   MODULE BgBuffer   ; Stores a fixed-sized rectangle of the screen background
   ; requires: Stack, Tile
 
-  ALIGN 32
+  ALIGN 256
 buffer              ; tiles of the rectangle by rows
-    block 512       ; 8×16 tiles = 8×8 charcells = 64×64 px
+    block 540       ; 8×16 tiles + 7 tiles for horiz offset
 
-oxy
-oy  byte -0         ; top of the buffered screen rectangle in tiles
-ox  byte -0         ; left of the buffered screen rectangle in tiles
+coords
+v   byte -0         ; top of the buffered screen rectangle in tiles
+u   byte -0         ; left of the buffered screen rectangle in tiles
+
+start
+    word buffer     ; addr of the top-left corner inside the buffer
+
+
+  MACRO BgBuffer.wrapRow regH
+    ld a, regH
+    cp high(BgBuffer.buffer) + 2
+    jp c, .skipWrap
+  .2 dec regH
+.skipWrap
+  ENDM
+
 
 ; Fills the buffer with the screen pixels
-; < hl: x, y coodrs of the top-left corner of the rectangle
+; < hl: u, v coodrs of the top-left corner of the rectangle
 ; spoils: af, bc, de, hl
 fillFromScreen
     Stack.store
     
     ; store coords
-    ld (oxy), hl
+    ld (coords), hl
     ld a, h
-    ld (.left), a   ; x coord
+    ld (.left), a   ; u coord
     
     ; position sp to the required row in rowAddrTable
     ld a, l
@@ -33,7 +46,7 @@ fillFromScreen
 .row
     pop de
 .left+1
-    ld a, 0         ; x coord
+    ld a, 0         ; u coord
     add a, e
     ld e, a         ; de: screen addr
     
@@ -61,5 +74,9 @@ fillFromScreen
     
     Stack.restore
     ret
+
+
+; > de: new uv coords
+move
 
   ENDMODULE

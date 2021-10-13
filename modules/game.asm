@@ -42,18 +42,19 @@ start
     
     ld c, e
     call Transition.prepare
+    push hl
+    call BgBuffer.fillFromScreen
+    pop hl
     call drawBuffer
     call Transition.perform
     jp .loop
 
 
 drawBuffer
-    ld a, Scr.papBlk | Scr.inkWht
+    ld a, Scr.papBlk | Scr.inkYlw
     call Utils.setScreenAttr
     
-    ld a, (Transition.currentPhase.tileCoords)
-    sub l
-    ld d, a
+    ld d, l
     xor a
     ld c, a
     srl d
@@ -63,9 +64,7 @@ drawBuffer
     rra
   EDUP
     ld e, a
-    ld a, (Transition.currentPhase.tileCoords + 1)
-    sub h
-    add a, e
+    add a, h
     ld e, a
     
     ld hl, Scr.attrStart
@@ -74,11 +73,11 @@ drawBuffer
     push bc
     ld de, 24
     ld b, 8
-    ld a, Scr.papBlu | Scr.inkYlw
+    ld a, Scr.papBlu | Scr.inkWht
 .loop
     srl c
     jr c, .full
-    ld a, Scr.papBlu | Scr.inkYlw | Scr.bright
+    ld a, Scr.papBlu | Scr.inkWht | Scr.bright
 .full
   DUP 8
     ld (hl), a
@@ -90,7 +89,7 @@ drawBuffer
     pop bc
     srl c
     ret nc
-    ld a, Scr.papBlu | Scr.inkYlw
+    ld a, Scr.papBlu | Scr.inkWht
   DUP 8
     ld (hl), a
     inc l

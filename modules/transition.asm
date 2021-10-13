@@ -45,9 +45,19 @@ nextPhase
 perform
     call performStep
     or a
-    jp nz, perform
+    ret z
     
-    ret
+    ; clear sprite (TODO: remove)
+    ld de, 2600
+.wait
+    dec e
+    jr nz, .wait
+    dec d
+    jr nz, .wait
+    
+    call Sprite.clear
+    
+    jp perform
 
 
 ; Draws the next cuboid sprite of the transition
@@ -98,8 +108,8 @@ performStep
 
 ; Calculates values for transition phases
 ; < c: direction
-; > hl: buffer coord offsets
-; spoils: af, b, hl, de
+; > hl: bgBuffer coords
+; spoils: af, b, de
 prepare
     ; set each phase step count
     ld a, steps + 1
@@ -172,11 +182,18 @@ prepare
     ld e, (hl)
     ex de, hl
     ; hl: buffer offset coords
-    push hl
     
     ; calculate tile coords
     call Coord.getTileCoords
     ld (currentPhase.tileCoords), de
+    
+    ; apply buffer offset
+    ex de, hl
+    or a
+    sbc hl, de
+    ; hl: buffer coords
+    push hl
+    
     call changeCoords
     call Coord.getTileCoords
     ld (nextPhase.tileCoords), de
