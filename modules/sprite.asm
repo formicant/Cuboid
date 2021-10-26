@@ -19,10 +19,8 @@ draw
     ld a, b
     ld (.width), a  ; sprite width
     ld (clear.width), a
-    ld a, 8
-    sub b
-    .2 rlca
-    ld (clear.margin), a
+  .2 rlca
+    ld (clear.sWidth), a
     
     ; get sprite top-left coords
     ld a, d
@@ -88,29 +86,21 @@ clear
     ld a, -0
     sub h
     .2 rlca
-    ld h, a
+    ld (.lMargin), a
+.sWidth+1
+    add a, -0
+    sub 32
+    neg
+    ld (.rMargin), a
     
 .sTop+1
     ld a, -0
     sub l
-    .3 rrca
-    add a, h        ; a: offset in the buffer
-    
-    ld hl, BgBuffer.start
-    ld e, (hl)
-    inc l
-    ld d, (hl)
-    ex de, hl
-    Op.add_hl_a     ; hl: addr in the buffer
-    
-    ;;///
-    ; ld a, (BgBuffer.offset)
-    ; rlca
-    ; rla
-    ; ld l, a
-    ; ld a, high(BgBuffer.buffer)
-    ; adc a, 0
-    ;;///
+    .3 rrca         ; * 32
+    ld hl, (BgBuffer.start)
+    Op.add_hl_a
+    BgBuffer.wrapRow h
+    ; hl: addr in the buffer
     
 .height+1
     ld c, -0        ; c: sprite height
@@ -131,6 +121,10 @@ clear
     add a, -0       ; add u coord of the left side of the sprite
     ld e, a         ; de: screen addr
     
+.lMargin+1
+    ld a, -0        ; a: offset in the buffer
+    Op.add_hl_a
+    
 .width+1
     ld b, -0        ; b: sprite width
     
@@ -150,10 +144,10 @@ clear
     inc hl
     djnz .clearTile
     
-    BgBuffer.wrapRow h
-.margin+1
+.rMargin+1
     ld a, -0
     Op.add_hl_a     ; hl: new line in the buffer
+    BgBuffer.wrapRow h
     dec c           ; next tile row
     jp nz, .clearRow
     

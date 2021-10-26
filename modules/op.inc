@@ -66,7 +66,7 @@
   
   
   ; a <- reg * const
-  ; returns junk if the product does not fit 8 bits
+  ; returns junk if the product does not fit in 8 bits
   ; const < 256, reg is not a
   ; spoils: f
   MACRO Op.mulConst reg, const

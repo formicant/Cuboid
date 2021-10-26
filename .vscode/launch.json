@@ -29,7 +29,9 @@
             "commandsAfterLaunch": [
                 "-logpoint enable",
                 "-assertion enable",
-                "-wpmem enable"
+                "-wpmem enable",
+                "-rmv",
+                "-mv BgBuffer.buffer 540"
             ],
             "disassemblerArgs": {
                 "esxdosRst": true

@@ -9,7 +9,8 @@ start
     
     call Blocks.drawLevel
     
-    ld hl, 12 _hl_ 12
+    ; ld hl, 12 _hl_ 12
+    ld hl, 6 _hl_ 15
     call BgBuffer.fillFromScreen
     
     ; coords
@@ -50,6 +51,7 @@ start
     jp .loop
 
 
+; (for debug purposes)
 drawBuffer
     ld a, Scr.papBlk | Scr.inkYlw
     call Utils.setScreenAttr
