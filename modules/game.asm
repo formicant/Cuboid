@@ -9,7 +9,6 @@ start
     
     call Blocks.drawLevel
     
-    ; ld hl, 12 _hl_ 12
     ld hl, 6 _hl_ 15
     call BgBuffer.fillFromScreen
     
@@ -44,7 +43,7 @@ start
     ld c, e
     call Transition.prepare
     push hl
-    call BgBuffer.fillFromScreen
+    call BgBuffer.move
     pop hl
     call drawBuffer
     call Transition.perform

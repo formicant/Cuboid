@@ -46,28 +46,77 @@ start               ; addr of the top-left corner inside the buffer
 ; < hl: u, v coodrs of the top-left corner of the rectangle
 ; spoils: af, bc, de, hl
 fillFromScreen
-    Stack.store
-    
     ; store coords
     ld (coords), hl
-    ld a, h
-    ld (.left), a   ; u coord
+    BgBuffer.setStart
     
-    ; position sp to the required row in rowAddrTable
-    ld a, l
+    ld bc, 0 _hl_ 16
+    jp fillRows
+
+
+; Moves the screen coords of the buffer
+; filling areas that are not currently in the buffer
+; with the screen pixels.
+; < hl: new u, v coodrs of the top-left corner of the rectangle
+; spoils: af, bc, de, hl
+move
+    ld a, (v)       ; old v
+    sub l           ; a: old v - new v
+    jr c, .down
+    jr nz, .up
+    
+    ld (coords), hl
+    BgBuffer.setStart
+    ret
+    
+.down
+    neg             ; a: new v - old v
+    ld c, a
+    ld a, 16
+    sub c
+    ld b, a
+    jp .rows
+.up
+    ld c, a
+    ld b, 0
+.rows
+    ld (coords), hl
+    BgBuffer.setStart
+    call fillRows
+    ret
+
+
+; Fills some rows of the buffer with the screen pixels
+; < b: number of skipped rows [0..15]
+;   c: number of rows to fill [1..16]
+; spoils: af, bc, de, hl
+fillRows
+    Stack.store
+    
+    ld a, (v)
+    add b
     rlca            ; a *= 2
     ld l, a
     ld h, high(Tile.rowAddrTable)
     ld sp, hl       ; hl is free now
+    ; sp: row in rowAddrTable
     
-    BgBuffer.setStart
+    ld hl, (start)
+    ld a, b
+  .4 rlca
+    rla             ; * 32, high bit in C flag
+    jr nc, .skipInc
+    inc h
+.skipInc
+    Op.add_hl_a
+    BgBuffer.wrapRow h
+    
     ; hl: start position in the buffer
-    ld bc, #0810    ; b: 8 (width), c: 16 (height)
     
 .row
+    ld b, 8         ; buffer width
     pop de          ; from rowAddrTable
-.left+1
-    ld a, -0        ; u coord
+    ld a, (u)
     add a, e
     ld e, a         ; de: screen addr
     
@@ -91,7 +140,6 @@ fillFromScreen
     
     ; next row
     BgBuffer.wrapRow h
-    ld b, 8
     dec c
     jp nz, .row
     
@@ -99,8 +147,65 @@ fillFromScreen
     ret
 
 
-; > de: new uv coords
-move
+; Fills left columns of the buffer with the screen pixels
+; < b: number of skipped rows [0..15]
+;   c: number of rows to fill [1..16]
+; spoils: af, bc, de, hl
+fillRows
+    Stack.store
+    
+    ld a, (v)
+    add b
+    rlca            ; a *= 2
+    ld l, a
+    ld h, high(Tile.rowAddrTable)
+    ld sp, hl       ; hl is free now
+    ; sp: row in rowAddrTable
+    
+    ld hl, (start)
+    ld a, b
+  .4 rlca
+    rla             ; * 32, high bit in C flag
+    jr nc, .skipInc
+    inc h
+.skipInc
+    Op.add_hl_a
+    BgBuffer.wrapRow h
+    
+    ; hl: start position in the buffer
+    
+.row
+    ld b, 8         ; buffer width
+    pop de          ; from rowAddrTable
+    ld a, (u)
+    add a, e
+    ld e, a         ; de: screen addr
+    
+.tile
+    ; fill one tile
+.cnt = 4
+  DUP .cnt
+.cnt = .cnt - 1
+    ld a, (de)
+    ld (hl), a
+  IF .cnt
+    inc l
+    inc d
+  ENDIF
+  EDUP
+  .3 dec d
+    ; next tile
+    inc e
+    inc hl
+    djnz .tile
+    
+    ; next row
+    BgBuffer.wrapRow h
+    dec c
+    jp nz, .row
+    
+    Stack.restore
     ret
+
 
   ENDMODULE

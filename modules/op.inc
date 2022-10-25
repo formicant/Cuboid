@@ -4,7 +4,6 @@
   ; the left operand as high byte and the right one as low byte
   DEFINE _hl_ << 8 |
   
-  
   MACRO Op.add_rr_a regH, regL
     add a, regL
     ld regL, a
@@ -12,7 +11,17 @@
     sub regL
     ld regH, a
   ENDM
-  
+
+;   Alternative variant:
+;   time: 18|22, length: 6
+;   MACRO Op.add_rr_a regH, regL
+;     add a, regL
+;     jp nc, .nc
+;     inc regH
+; .nc
+;     ld regL, a
+;   ENDM
+
   ; bc <- bc + a
   ; spoils: af
   ; time: 20, length: 5
